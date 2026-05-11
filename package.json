@@ -1,0 +1,43 @@
+{
+  "name": "digital-attendance-system",
+  "version": "1.0.0",
+  "description": "Digital Attendance System with QR Code Scanning",
+  "main": "electron.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "electron .",
+    "dist": "electron-builder"
+  },
+  "keywords": [
+    "attendance",
+    "qr-code",
+    "tracking"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/cli": "^8.3.1",
+    "@capacitor/core": "^8.3.1",
+    "electron": "^27.6.0",
+    "electron-builder": "^24.6.2"
+  },
+  "build": {
+    "appId": "com.zed.digitalattendance",
+    "productName": "Zed Digital Attendance",
+    "files": [
+      "public/**/*",
+      "server.js",
+      "electron.js",
+      "package.json"
+    ],
+    "win": {
+      "target": ["nsis", "portable"]
+    }
+  }
+}

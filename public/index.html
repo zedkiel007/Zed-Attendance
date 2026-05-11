@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#007bff">
+  <meta name="description" content="Digital Attendance System with QR Code Scanning">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Zed Attendance">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <title>Digital Attendance System</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1>📋 Digital Attendance System</h1>
+      <p>QR Code Based Time Tracking</p>
+      <div id="clockDisplay" class="date-time"></div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav-tabs">
+      <button class="nav-btn active" data-tab="scanner">QR Scanner</button>
+      <button class="nav-btn" data-tab="register">Register Employee</button>
+      <button class="nav-btn" data-tab="summary">Daily Summary</button>
+      <button class="nav-btn" data-tab="history">Attendance History</button>
+      <button class="nav-btn" data-tab="salary">Salary Report</button>
+    </nav>
+
+    <!-- Tab Content -->
+    <main class="tab-content">
+      <!-- QR Scanner Tab -->
+      <section id="scanner" class="tab-pane active">
+        <div class="scanner-section">
+          <h2>Scan QR Code</h2>
+          
+          <div class="video-container">
+            <video id="video" width="400" height="400"></video>
+            <canvas id="canvas" style="display: none;"></canvas>
+          </div>
+
+          <div class="scanner-controls">
+            <button id="startBtn" class="btn btn-primary">Start Camera</button>
+            <button id="stopBtn" class="btn btn-secondary" disabled>Stop Camera</button>
+          </div>
+
+          <div id="result" class="result-box">
+            <p>Waiting for QR code...</p>
+          </div>
+
+          <!-- Manual Entry Option -->
+          <div class="manual-entry">
+            <h3>Or Enter Manually</h3>
+            <input type="text" id="manualEmployeeId" placeholder="Employee ID" maxlength="20">
+            <select id="manualType">
+              <option value="in">Time In</option>
+              <option value="out">Time Out</option>
+            </select>
+            <button id="manualSubmitBtn" class="btn btn-success">Record Attendance</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Register Employee Tab -->
+      <section id="register" class="tab-pane">
+        <div class="register-section">
+          <h2>Register New Employee</h2>
+          
+          <form id="registerForm" class="form">
+            <input type="hidden" id="currentEmployeeId" value="">
+
+            <div class="form-group">
+              <label for="employeeId">Employee ID:</label>
+              <input type="text" id="employeeId" required placeholder="e.g., EMP001" maxlength="20">
+            </div>
+
+            <div class="form-group">
+              <label for="employeeName">Full Name:</label>
+              <input type="text" id="employeeName" required placeholder="e.g., John Doe">
+            </div>
+
+            <div class="form-group">
+              <label for="department">Department:</label>
+              <input type="text" id="department" placeholder="e.g., IT, HR, Sales">
+            </div>
+
+            <div class="form-group">
+              <label for="employeeStatus">Status:</label>
+              <select id="employeeStatus">
+                <option value="Active">Active</option>
+                <option value="Fired">Fired</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="registerSubmitBtn">Register Employee</button>
+            <button type="button" class="btn btn-secondary" id="cancelEditBtn" style="display:none;">Cancel Edit</button>
+          </form>
+
+          <div id="registerMessage" class="message"></div>
+
+          <h3>Registered Employees</h3>
+          <div id="employeeList" class="employee-list"></div>
+
+          <div id="qrContainer" class="qr-container"></div>
+        </div>
+      </section>
+
+      <!-- Daily Summary Tab -->
+      <section id="summary" class="tab-pane">
+        <div class="summary-section">
+          <h2>Today's Attendance Summary</h2>
+          
+          <button id="refreshSummaryBtn" class="btn btn-primary">Refresh Summary</button>
+
+          <div id="summaryTable" class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Employee ID</th>
+                  <th>Name</th>
+                  <th>Department</th>
+                  <th>Time In</th>
+                  <th>Time Out</th>
+                  <th>Duration</th>
+                  <th>Overtime</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="summaryBody">
+                <tr>
+                  <td colspan="8">No data yet</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <button id="exportTodayBtn" class="btn btn-success">Export Today's Report</button>
+        </div>
+      </section>
+
+      <!-- Attendance History Tab -->
+      <section id="history" class="tab-pane">
+        <div class="history-section">
+          <h2>Attendance History</h2>
+          
+          <div class="filter-group">
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate">
+            
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate">
+            
+            <button id="filterBtn" class="btn btn-primary">Filter</button>
+            <button id="exportBtn" class="btn btn-success">Export Report</button>
+            <button id="deleteSelectedBtn" class="btn btn-danger">Delete Selected</button>
+            <button id="deleteAllHistoryBtn" class="btn btn-danger">Delete All</button>
+          </div>
+
+          <div id="historyTable" class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Select</th>
+                  <th>Employee ID</th>
+                  <th>Name</th>
+                  <th>Department</th>
+                  <th>Time In</th>
+                  <th>Time Out</th>
+                  <th>Duration</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody">
+                <tr>
+                  <td colspan="8">No data yet</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Salary Report Tab -->
+      <section id="salary" class="tab-pane">
+        <div class="salary-section">
+          <h2>Salary Report</h2>
+
+          <div class="filter-group">
+            <label for="reportPeriod">Period:</label>
+            <select id="reportPeriod">
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="custom">Custom Range</option>
+            </select>
+
+            <label for="salaryEmployee">Employee:</label>
+            <select id="salaryEmployee">
+              <option value="all">All Employees</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="salaryStartDate">Start Date:</label>
+            <input type="date" id="salaryStartDate">
+
+            <label for="salaryEndDate">End Date:</label>
+            <input type="date" id="salaryEndDate">
+          </div>
+
+          <div class="filter-group">
+            <label for="dailyRate">Daily Rate:</label>
+            <input type="number" id="dailyRate" placeholder="0" min="0">
+
+            <label for="otRate">OT Rate / hr:</label>
+            <input type="number" id="otRate" placeholder="0" min="0">
+          </div>
+
+          <div class="filter-group">
+            <button id="loadSalaryBtn" class="btn btn-primary">Load Salary Report</button>
+            <button id="printSalaryBtn" class="btn btn-secondary">Print Salary Report</button>
+          </div>
+
+          <div id="salaryReportTable" class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Employee ID</th>
+                  <th>Name</th>
+                  <th>Days Present</th>
+                  <th>Total Hours</th>
+                  <th>Total OT</th>
+                  <th>Daily Rate</th>
+                  <th>OT Rate</th>
+                  <th>Total Salary</th>
+                </tr>
+              </thead>
+              <tbody id="salaryBody">
+                <tr>
+                  <td colspan="8">No salary report loaded</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Notification -->
+  <div id="notification" class="notification"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

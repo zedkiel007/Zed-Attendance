@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Zed Digital Attendance</string>
+    <string name="title_activity_main">Zed Digital Attendance</string>
+    <string name="package_name">com.zed.digitalattendance</string>
+    <string name="custom_url_scheme">com.zed.digitalattendance</string>
+</resources>
